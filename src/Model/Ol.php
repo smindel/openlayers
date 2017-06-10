@@ -21,7 +21,7 @@ class Ol extends DataObject
         $fields->unshift(HeaderField::create('Title', $this->singular_name()));
 
         foreach ($this->hasOne() as $fieldName => $class) {
-            if ($field = $fields->dataFieldByName($fieldName . 'ID')) $fields->replaceField($fieldName . 'ID', EditorField::from_dropdown($field, $class));
+            if ($field = $fields->dataFieldByName($fieldName . 'ID')) $fields->replaceField($fieldName . 'ID', EditorField::from_dropdown($field, $this->$fieldName(), $class));
         }
         return $fields;
     }
