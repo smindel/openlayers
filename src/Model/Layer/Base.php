@@ -11,7 +11,13 @@ class Base extends Ol
     private static $abstract = true;
 
     private static $db = [
-        'visible' => 'Boolean',
+        'Opacity' => 'Varchar(255)',
+        'Visible' => 'Varchar(255)',
+    ];
+
+    private static $defaults = [
+        'Opacity' => '1.00',
+        'Visible' => 'true',
     ];
 
     private static $has_one = [

@@ -9,11 +9,17 @@ class View extends Ol
     private static $base_class = true;
 
     private static $db = [
-        'center' => 'Varchar',
-        'zoom' => 'Int',
+        'Center' => 'Varchar',
+        'Zoom' => 'Int',
+        'Projection' => 'Varchar',
     ];
 
-    private static $has_one = [
+    private static $belongs_to = [
         'Map' => 'AdminoPasswordo\\OpenLayers\\Model\\Map',
+    ];
+
+    private static $defaults = [
+        'Center' => '[0, 0]',
+        'Zoom' => '10',
     ];
 }

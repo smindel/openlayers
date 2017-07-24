@@ -1,2 +1,0 @@
-$DropdownField.Field
-$GridFieldActions

@@ -10,6 +10,10 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\LookupField;
+use SilverStripe\View\ArrayData;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\ArrayLib;
+use SilverStripe\View\SSViewer;
 
 class Ol extends DataObject
 {
@@ -21,7 +25,12 @@ class Ol extends DataObject
         $fields->unshift(HeaderField::create('Title', $this->singular_name()));
 
         foreach ($this->hasOne() as $fieldName => $class) {
-            if ($field = $fields->dataFieldByName($fieldName . 'ID')) $fields->replaceField($fieldName . 'ID', EditorField::from_dropdown($field, $this->$fieldName(), $class));
+            if ($field = $fields->dataFieldByName($fieldName . 'ID')) {
+                $fields->replaceField(
+                    $field->getName(),
+                    EditorField::create($field->getName())->setRecord($this->$fieldName())
+                );
+            }
         }
         return $fields;
     }
@@ -47,5 +56,44 @@ class Ol extends DataObject
         }
 
         return $types;
+    }
+
+    public function forTemplate()
+    {
+        $candidates = $this->config()->template_candidates ?: array_map('SilverStripe\\Core\\ClassInfo::shortName', array_reverse(array_values(ClassInfo::ancestry($this))));
+        return $this->renderWith($candidates);
+    }
+
+    public function getJsOptions($raw = false)
+    {
+        $config = ArrayLib::is_associative(
+            $config = $this->config()->js_options ?: array_keys($this->config()->get('db'))
+        ) ? $config : array_combine(array_map('lcfirst', $config), $config);
+
+        $options = ArrayList::create([ArrayData::create(['Index' => '_dbId', 'Value' => $this->ID])]);
+
+        foreach ($config as $name => $spec) {
+
+            switch (true) {
+                case $this->hasField($spec): $value = $this->$spec; break;
+                case $this->hasMethod($spec): $value = $this->$spec(); break;
+                default: throw new \Exception("JS option '$spec' for '$name' of " . get_class($this) . " can not be resolved.");
+            }
+
+            if ($value) {
+                $item = ArrayData::create([
+                    'Index' => $name,
+                    'Value' => (string)$value,
+                ]);
+
+                $options->push($item);
+            }
+        }
+
+        if ($raw) return $options;
+
+        return SSViewer::fromString(
+            '<% loop $JsOptions %>$Index: $Value.RAW<% if not $Last %>,<% end_if %><% end_loop %>'
+        )->process(ArrayData::create(['JsOptions' => $options]));
     }
 }
