@@ -1,0 +1,9 @@
+{
+    "name": "smindel/silverstripe-openlayers",
+    "type": "silverstripe-vendormodule",
+    "autoload": {
+        "psr-4": {
+            "AdminoPasswordo\\OpenLayers\\": "code/"
+        }
+    }
+}
